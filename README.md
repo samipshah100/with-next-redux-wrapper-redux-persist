@@ -1,6 +1,6 @@
-## Next Redux TOOLKIT Wrapper along with Redux Persist (& redux-thunk too) - A ready boilerplate for NEXT JS projects with persistent global state ✨
+# Next Redux TOOLKIT Wrapper along with Redux Persist (& redux-thunk too) - A ready boilerplate for NEXT JS projects with persistent global state ✨
 
-# Note: This is a fork from https://github.com/fazlulkarimweb/with-next-redux-wrapper-redux-persist remodelled to work with redux toolkit.#
+## Note: This is a fork from https://github.com/fazlulkarimweb/with-next-redux-wrapper-redux-persist remodelled to work with redux toolkit.
 
 I just needed a simple persistent global state for my Next.js website. This is a redux boilerplate and I wrote it for myself at first to speed up my future project. Now I added extensive comment to help people understanding the whole implementation.
 
