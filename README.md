@@ -1,4 +1,6 @@
-## Next Redux Wrapper along with Redux Persist (& redux-thunk too) - A ready boilerplate for NEXT JS projects with persistent global state ✨
+## Next Redux TOOLKIT Wrapper along with Redux Persist (& redux-thunk too) - A ready boilerplate for NEXT JS projects with persistent global state ✨
+
+# Note: This is a fork from https://github.com/fazlulkarimweb/with-next-redux-wrapper-redux-persist remodelled to work with redux toolkit.#
 
 I just needed a simple persistent global state for my Next.js website. This is a redux boilerplate and I wrote it for myself at first to speed up my future project. Now I added extensive comment to help people understanding the whole implementation.
 
@@ -18,56 +20,68 @@ What should be the structure of your redux store?
 
 ```javascript
 // ./store/store
-import { createStore, applyMiddleware, combineReducers } from "redux";
-import { createWrapper, HYDRATE } from "next-redux-wrapper";
-import thunkMiddleware from "redux-thunk";
+import { configureStore, getDefaultMiddleware } from '@reduxjs/toolkit'
+
+import { combineReducers } from 'redux'
+import { createWrapper, HYDRATE } from 'next-redux-wrapper'
+
+import {
+  persistStore,
+  persistReducer,
+  FLUSH,
+  REHYDRATE,
+  PAUSE,
+  PERSIST,
+  PURGE,
+  REGISTER,
+} from 'redux-persist'
+import storage from 'redux-persist/lib/storage'
+
 import counter from "./counter/reducer";
 
 //COMBINING ALL REDUCERS
-const combinedReducer = combineReducers({
-  counter,
-  // OTHER REDUCERS WILL BE ADDED HERE
-});
 
-// BINDING MIDDLEWARE
-const bindMiddleware = (middleware) => {
-  if (process.env.NODE_ENV !== "production") {
-    const { composeWithDevTools } = require("redux-devtools-extension");
-    return composeWithDevTools(applyMiddleware(...middleware));
-  }
-  return applyMiddleware(...middleware);
-};
+const rootReducer = combineReducers({
+  list,
+  // other reducers here
+})
 
 const makeStore = ({ isServer }) => {
   if (isServer) {
     //If it's on server side, create a store
-    return createStore(combinedReducer, bindMiddleware([thunkMiddleware]));
+    return configureStore({
+      reducer: rootReducer,
+    })
   } else {
     //If it's on client side, create a store which will persist
-    const { persistStore, persistReducer } = require("redux-persist");
-    const storage = require("redux-persist/lib/storage").default;
+    // const storage = storage.default
 
     const persistConfig = {
-      key: "nextjs",
-      whitelist: ["counter"], // only counter will be persisted, add other reducers if needed
-      storage, // if needed, use a safer storage
-    };
+      key: 'root',
+      version: 1,
+      blacklist: [],
+      storage,
+    }
 
-    const persistedReducer = persistReducer(persistConfig, combinedReducer); // Create a new reducer with our existing reducer
+    const persistedReducer = persistReducer(persistConfig, rootReducer) // Create a new reducer with our existing reducer
 
-    const store = createStore(
-      persistedReducer,
-      bindMiddleware([thunkMiddleware])
-    ); // Creating the store again
+    const store = configureStore({
+      reducer: persistedReducer,
+      middleware: getDefaultMiddleware({
+        serializableCheck: {
+          ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+        },
+      }),
+    })
 
-    store.__persistor = persistStore(store); // This creates a persistor object & push that persisted object to .__persistor, so that we can avail the persistability feature
+    store.__persistor = persistStore(store) // This creates a persistor object & push that persisted object to .__persistor, so that we can avail the persistability feature
 
-    return store;
+    return store
   }
-};
-
+}
 // Export the wrapper & wrap the pages/_app.js with this wrapper only
-export const wrapper = createWrapper(makeStore);
+
+export const wrapper = createWrapper(makeStore)
 ```
 
 View the file structure along with the code
